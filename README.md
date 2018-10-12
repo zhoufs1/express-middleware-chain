@@ -15,7 +15,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 
-var { MiddlewareChain, enhanceApp } = require('../../dist/index');
+var { MiddlewareChain, enhanceApp } = require('@byted/express-middleware-chain');
 
 chain
   .middleware('logger')
