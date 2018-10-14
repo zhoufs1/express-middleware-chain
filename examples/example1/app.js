@@ -18,21 +18,51 @@ var chain = new MiddlewareChain();
 
 chain
   .middleware('logger')
-  .use(logger('dev'))
+  .use((req, res, next) => {
+    console.log('我是一个假logger,一会儿会有一个真的把我替换掉');
+    next();
+  }) //logger('dev')
   .end()
+
   .middleware('json')
   .use(express.json())
   .end()
-  .middleware('urlEncoded')
-  .use(express.urlencoded({ extended: false }))
+  .before('logger')
+  .use((req, res, next) => {
+    console.log('我在logger前执行');
+    next();
+  })
   .end()
+
   .middleware('cookie')
   .use(cookieParser())
   .end()
-  .middleware('static')
-  .use(express.static(path.join(__dirname, 'public')))
-  .end();
 
+  .before('cookie')
+  .use(express.urlencoded({ extended: false }))
+  .end()
+
+  .after('cookie')
+  .use(express.static(path.join(__dirname, 'public')))
+  .end()
+
+  .after('cookie')
+  .use((req, res, next) => {
+    console.log('我在cookie后执行');
+    next();
+  })
+  .end()
+
+  .before('cookie')
+  .use((req, res, next) => {
+    console.log('我在cookie前执行');
+    next();
+  })
+  .end()
+
+  .middleware('logger') //使用真实的logger替换假冒的logger，服务日志可以正确打印
+  .use(logger('dev'))
+  .end();
 
 // app.use(logger('dev'));
 // app.use(express.json());
@@ -52,7 +82,7 @@ chain
 // app.use('/users', usersRouter);
 
 console.log('-----------产生的中间件配置----------');
-console.log(JSON.stringify(chain.toConfig(), {} , 2))
+console.log(chain.toConfig());
 console.log('----------------------------------');
 
 
